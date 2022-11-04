@@ -1,10 +1,9 @@
 import { loadStdlib } from "@reach-sh/stdlib";
 import * as backend from './build/index.main.mjs';
 const stdlib = loadStdlib({REACH_NO_WARN: 'Y'});
-const MIN_PRICE = 10;// price
-const USERS = 10;// users + refunds(at loop)
+const MIN_PRICE = 10;
+const USERS = 10;
 const FAILS = 2;
-let sales = 0;
 
 const accA = await stdlib.newTestAccount(stdlib.parseCurrency(5000));
 const ctcA = accA.contract(backend);
@@ -24,21 +23,29 @@ const startBuyers = async () => {
     cost = (i == 0 ? 0 : cost)// forcing a min cost error
     try{
       await ctc.apis.Buyer.purchase(cost);
+      const tokensLeft = await ctcA.v.available();
+      const bank = await ctcA.v.bank();
       const ev = await ctc.e.Purchase.next();
-      sales++;
-      console.log(`Purchases made: ${sales}`);
-      console.log(`Purchase event at ${ev.when} for ${ev.what}`);
+      const sales = await ctcA.v.sold();
+      console.log(`
+      Purchase number: ${sales[1]}
+      There are ${tokensLeft[1]} loyalty tokens left
+      The seller has made ${bank[1]}`);
+      //console.log(`Purchase event at ${ev.when} for ${ev.what}`);
     } catch (e) {
       console.log(`${e}`);
-
     }
-    if(i == 1){
+    if(i == 1){// 1 wants a refund
       const amt = await ctc.apis.Buyer.refund();
-      sales--;
-      console.log(`Customer ${i} is getting a refund of ${amt}`);
-      console.log(`Purchases made: ${sales}`);
+      const left = await ctcA.v.available();
+      const sales = await ctcA.v.sold();
+      console.log(`
+      Customer ${i} is getting a refund of ${amt}
+      There are ${left[1]} loyalty tokens left
+      Purchase number: ${sales[1]}`);
     }
   }// end of runBuyer
+  // 1 refund, 1 amount too low fail
   for(let i = 0; i < USERS + FAILS; i++){
     await runBuyer(i);
   }

@@ -27,7 +27,6 @@ export const main = Reach.App(() => {
     available: Fun([], UInt),
   });
   const E = Events({
-    // buyer,  network, non-network
     Purchase: [Address, UInt, UInt],
     Refund: [Address, UInt, UInt],
   })
@@ -42,24 +41,24 @@ export const main = Reach.App(() => {
   A.interact.launched(getContract());
 
   const pMap = new Map(UInt);
-  const [ticketsSold, total] = parallelReduce([0, 0])
+  const [tokensSold, total] = parallelReduce([0, 0])
     .define(() => {
-      V.sold.set(() => ticketsSold);
+      V.sold.set(() => tokensSold);
       V.bank.set(() => total);
-      V.available.set(() => supply - ticketsSold);
+      V.available.set(() => supply - tokensSold);
     })
     .paySpec([tok])
     .invariant(pMap.sum() == total, "tracking amounts wrong")
     .invariant(balance() == total, "network token balance wrong")
-    .invariant(balance(tok) == supply - ticketsSold, "non-network token balance wrong")
-    .while(ticketsSold < supply)
+    .invariant(balance(tok) == supply - tokensSold, "non-network token balance wrong")
+    .while(tokensSold < supply)
     .api_(B.purchase, (amount) => {
        /**
         * is this actually useful? Given the loop exit condition, 
         * is there any possibility that this api could be called,
         * even by a micro-second, if ticketsSold == supply?
         */
-      check(ticketsSold != supply, "sorry, out of tickets");
+      check(tokensSold != supply, "sorry, out of tickets");
       check(isNone(pMap[this]), "sorry, you are already in this list");
        /**
         * this is entirely optional -- it is an extra restriction.
@@ -71,7 +70,7 @@ export const main = Reach.App(() => {
         transfer(1, tok).to(this);
         E.Purchase(this, amount, 1);
         ret(null);
-        return [ticketsSold + 1, total + amount];
+        return [tokensSold + 1, total + amount];
       }];
     })
     .api_(B.refund, () => {
@@ -82,7 +81,7 @@ export const main = Reach.App(() => {
         E.Refund(this, paid, 1);
         ret(paid);
         delete pMap[this];
-        return[ticketsSold - 1, total - paid]
+        return[tokensSold - 1, total - paid]
       }];
     });
   transfer(total).to(A);
