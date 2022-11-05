@@ -23,26 +23,13 @@ const startBuyers = async () => {
     cost = (i == 0 ? 0 : cost)// forcing a min cost error
     try{
       await ctc.apis.Buyer.purchase(cost);
-      const tokensLeft = await ctcA.v.available();
-      const bank = await ctcA.v.bank();
-      const ev = await ctc.e.Purchase.next();
-      const sales = await ctcA.v.sold();
-      console.log(`
-      Purchase number: ${sales[1]}
-      There are ${tokensLeft[1]} loyalty tokens left
-      The seller has made ${bank[1]}`);
-      //console.log(`Purchase event at ${ev.when} for ${ev.what}`);
+      console.log(`Purchase number: ${i}`);
     } catch (e) {
       console.log(`${e}`);
     }
     if(i == 1){// 1 wants a refund
       const amt = await ctc.apis.Buyer.refund();
-      const left = await ctcA.v.available();
-      const sales = await ctcA.v.sold();
-      console.log(`
-      Customer ${i} is getting a refund of ${amt}
-      There are ${left[1]} loyalty tokens left
-      Purchase number: ${sales[1]}`);
+      console.log(`Customer ${i} is getting a refund of ${amt}`);
     }
   }// end of runBuyer
   // 1 refund, 1 amount too low fail
@@ -61,5 +48,5 @@ await ctcA.p.Admin({
     console.log(`Ready at contract: ${contract}\n`);
     await startBuyers();
   },
-}),
+});
 console.log('Exiting...');
