@@ -1,17 +1,15 @@
-md5: 2d9202924ee606ab47726038fbde05a3  index.rsh
-md5: 5229e4cebe07397fe5e73a60dc19f70f  index.mjs
 # {#point-of-sale} Point-of-sale DApp
 
 This tutorial will walk you through creating a business point-of-sale machine, like Toast or Square.
 
-It assumes that you are comfortable with writing simple Reach DApps and have already completed one or two of our [tutorials](https://docs.reach.sh/tut/).
+It assumes that you are comfortable with writing simple Reach DApps and have already completed one or two of our [tutorials](https://docs.reach.sh/tut/). Complete them all to become a Reach rockstar.
 
 ## Program Design
-The main function of our DApp will be to process business transactions. This means we will need to implement functions for purchases and refunds. We'll allow purchases of varying amounts for different products, so we will also need to track the amount of each users purchase.
+The main function of our DApp will be to process sale transactions. This means we will need to implement functions for purchases and refunds. We will allow purchases of varying amounts for different products, so we will also need to track the amount of each users purchase.
 
 It would also be good to reward our business' visitors with a Loyalty Token. Future programs could use this Loyalty Token to gate access to special features or events.
 
-When designing our DApp we need to consider possibilities for the length of our contract. Given the loyalty token, it will be best for our implementation to make contract functions accessible until we run out of Loyalty Tokens.
+When designing our DApp we need to consider possibilities for the length of our contract. Given the Loyalty Token, it will be best for our implementation to make contract functions accessible until we run out of Loyalty Tokens.
 
 ### Here is the general flow of our DApp:
 1. Admin gives parameters and deploys contract.
@@ -26,10 +24,10 @@ When designing our DApp we need to consider possibilities for the length of our 
 ## Where the users at?
 At this point of designing our Reach DApp, we need to ask ourselves how many and what types of users will be interacting with it.
 
-We know that we need at least 1 `{!rsh} Participant` to deploy the contract and serve as our `{!rsh} Admin`. We can consider them our shop owner.
+We know that we need at least one `{!rsh} Participant` to deploy the contract and serve as our 'Admin'. We can consider them our shop owner.
 
 :::note
-All Reach DApps require at least 1 `{!rsh} Participant`, because `{!rsh} API` members *do not* have the ability to deploy contracts.
+All Reach DApps require at least one `{!rsh} Participant`, because `{!rsh} API` members *do not* have the ability to deploy contracts.
 :::
 
 The rest of our users will be customers in our shop, so they are best represented as `{!rsh} API`. This will allow an unlimited number of unknown users to interact with our contract `{!rsh} API` member functions.
@@ -64,13 +62,13 @@ range: 19-25
 - Line 19 starts the local step.
 - Line 20 gets the parameters from the Admin frontend and unpacks them into respective constants.
 - Line 22 publishes these identifiers to the blockchain.
-- Line 23 has us `{!rsh} commit()` to move out of consensus. Now our contract is aware of `{!rsh} tok` and it can be paid into the contract.
+- Line 23 has us `{!rsh} commit()` to move out of consensus. Now our contract is aware of `tok` and it can be paid into the contract.
 - Line 24 pays the total supply of Loyalty Tokens into the contract.
 - Line 25 Notifies the frontend that our contract is ready to start accepting API calls.
 
 The first two steps of our General Flow are now complete.
 
-Now is a good time to get into the frontend (`mjs`) test suite and get that started.
+Now is a good time to get into the frontend `mjs` test suite and get that started.
 ```
 load: /examples/point-of-sale/index.mjs
 md5:  5229e4cebe07397fe5e73a60dc19f70f
@@ -80,14 +78,14 @@ range: 1-15
 - Line 10 launches our Loyalty Token, depositing the total supply to `accA`.
 - Lines 12-15 is a welcome message, that is probably too long.
 
-Now let's automate our Admin interaction. Note the jump in line numbers, this code goes at the bottom of your (`mjs`) file.
+Now let's automate our Admin interaction. Note the jump in line numbers, this code goes at the bottom of your `mjs` file.
 ```
 load: /examples/point-of-sale/index.mjs
 md5:  5229e4cebe07397fe5e73a60dc19f70f
 range: 45-56
 ```
 - Line 46-49 are various parameter values provided by the Admin.
-- Line 51-53 is our function that will be called when the contract is ready to start accepting API calls. Note the `startBuyers()` function that we will implement later.
+- Line 51-53 is our function that will be called when the contract is ready to start accepting API calls. Note the `{!mjs} startBuyers()` function that we will implement later.
 - Line 56 is useful to know that our test suite exited normally.
 
 Okay, now we are ready to get back to our General Flow list!
@@ -99,7 +97,7 @@ md5:  2d9202924ee606ab47726038fbde05a3
 range: 27-33
 ```
 - Line 27 defines a new `{!rsh} Map` for storing users and their purchase amounts.
-- Line 28 starts our `{!rsh} parallelReduce` tracking two values, `{!rsh} tokensSold, total`. These values are initialized each to zero.
+- Line 28 starts our `{!rsh} parallelReduce` tracking two values, `tokensSold, total`. These values are initialized each to zero.
 - Line 29 specifies a `{!rsh} paySpec`. This is used to allow the `{!rsh} parallelReduce` to *accept* non-network tokens as payment. Notice the [ticket-sales](link here) example *does not* use `{!rsh} paySpec`, because it *pays out* non-network tokens, it **does not** *accept* payment in those same tokens.
 - Line 30-32 set up `{!rsh} invariant`s for our loop. Each one of these is essential to compilation.
 - Line 33 sets our loop condition. This will run until the contract is out of Loyalty Tokens.
@@ -112,12 +110,12 @@ range: 34-45
 ```
 - Line 34 is our function heading
 - Lines 35-37 are necessary dynamic checks to be executed when this function is called. These act as gates for this function and help the Reach Verification Engine better understand the bounds of this DApp.
-- Line 38 sets up our outer `{!rsh} return`. This may be the first time you have seen this syntax here. Recall, the first argument for the outer return is the `PAY_EXPR` -- but we specified a `{!rsh} paySpec([tok])` so we need to account for these tokens as well. The syntax here generally is.. `{!rsh} return[[networkTokenAmount, [amount, nonNetworkTok]]`. That means that our function is specifically asking the user to pay `{!rsh} purchasePrice` in network tokens and `{!rsh} [0, tok]` of our Loyalty tokens.
+- Line 38 sets up our outer `return`. This may be the first time you have seen this syntax here. Recall, the first argument for the outer return is the `PAY_EXPR` -- but we specified a `{!rsh} paySpec([tok])` so we need to account for these tokens as well. The general syntax here is.. `{!rsh} return[[networkTokenAmount, [amount, nonNetworkTok]]`. That means that our function is specifically asking the user to pay `purchasePrice` in network tokens and `[0, tok]` of our Loyalty tokens.
 - Line 39 adds the caller to the `{!rsh} Map` with their purchase amount as the value. This allows us to look up this value later should the user need a refund.
-- Line 40 adds one to the `{!rsh} tokensSold` variable.
+- Line 40 adds one to the `tokensSold` variable.
 - Line 41 transfers a single Loyalty Token to the purchaser.
 - Line 42 returns our new variable to the caller.
-- Line 43 updates the `{!rsh} parallelReduce LHS` values
+- Line 43 updates the `{!rsh} parallelReduce` LHS values
 
 That is all for our `{!rsh} purchase` function!
 
@@ -127,9 +125,9 @@ load: /examples/point-of-sale/index.rsh
 md5:  2d9202924ee606ab47726038fbde05a3
 range: 46-55
 ```
-- Line 46 starts our api macro (`.api_`).
+- Line 46 starts our api macro `.api_`.
 - Line 47 is a dynamic check to ensure that the caller is in our Map, signifying that they have made a purchase.
-- Line 48 starts our outer `{!rsh} return` and is the real reason we needed `{!rsh} paySpec` syntax. Here we accept `{!rsh} [1, tok]` from the caller.
+- Line 48 starts our outer `return` and is the real reason we needed `{!rsh} paySpec` syntax. Here we accept `[1, tok]` from the caller.
 - Line 49 retrieves the users value from the Map. If it is not there, we default to 0. Read more about why we do this in our [ERC20 tutorial](https://docs.reach.sh/tut/erc20/#p_49).
 - Line 50 transfers the users purchase amount from the contract account in network tokens to the caller.
 - Line 51 returns the map value to the caller.
@@ -142,16 +140,16 @@ In 22 lines of Reach code, we can process varying purchase amounts in network to
 
 The next step in our General Flow is to assume that we close these functions because we are sold out of Loyalty Tokens. We will write this functionality into our frontend test suite later.
 
-For now, let's finish up our Reach (`rsh`) code. All that is left is to transfer the network token balance to the Admin and exit the DApp.
+For now, let's finish up our Reach `rsh` code. All that is left is to transfer the network token balance to the Admin and exit the DApp.
 ```
 load: /examples/point-of-sale/index.rsh
 md5:  2d9202924ee606ab47726038fbde05a3
 range: 56-59
 ```
 
-That is all for our (`rsh`) file.
+That is all for our `rsh` file.
 
-We can finish with some simple tests for our API functions in the frontend (`mjs`) file.
+We can finish with some simple tests for our API functions in the frontend `mjs` file.
 
 First, a helper function to generate a random purchase price.
 ```
@@ -159,7 +157,7 @@ load: /examples/point-of-sale/index.mjs
 md5:  5229e4cebe07397fe5e73a60dc19f70f
 range: 17-20
 ```
-- Line 19 checks if it is the first user, for whom we set a zero test for the `{!rsh} purchasePrice`.
+- Line 19 checks if it is the first user, for whom we set a zero test for the `purchasePrice`.
 
 We have used the following testing format for API users in other tutorials, so we are going to tackle all of this at once.
 ```
@@ -167,18 +165,20 @@ load: /examples/point-of-sale/index.mjs
 md5:  5229e4cebe07397fe5e73a60dc19f70f
 range: 22-43
 ```
-- Line 22 is the outer function we'll call from `{!rsh} launched`.
+- Line 22 is the outer function we'll call from `{!mjs} launched`.
 - Line 23 starts the inner function to run individual user actions.
 - Line 24-25 are for necessary account and contract tasks.
-- Line 26 gets a random purchase price from our `getPurchasePrice()` function.
+- Line 26 gets a random purchase price from our `{!mjs} getPurchasePrice()` function.
 - Line 27 opts the user in to the Loyalty Token.
-- Line 28 starts a `try...catch` -- we expect our zero cost txn to fail.
+- Line 28 starts a `{!cmd} try...catch` -- we expect our zero cost purchase call to fail.
 - Line 29 makes the API call to the contract.
 - Line 31-33 handles and logs the exception.
 - Line 34-37 simulates the first user requesting a refund.
-- Lines 40-42 set up a looping construct to create and run users.
+- Lines 40-42 sets up a looping construct to create and run users.
 
 IF we made no mistakes, that is it. Our point-of-sale DApp is ready!
+
+This DApp has no restrictions and will run on different consensus networks.
 ```cmd
 $ ./reach run
 ```
@@ -215,7 +215,7 @@ Exiting...
 
 Done!
 
-If you have completed all of the tutorials up until this point, you are getting pretty good at this.
+If you have completed all of the tutorials up until this point, you are getting pretty good at this. If not, don't worry - practice makes perfect. Plus we at Reach are never gonna [give you up](https://youtu.be/dQw4w9WgXcQ).
 
 ## Bonus Exercise
 To understand the Verification Checks and Invariants of this program better, let's break it.
