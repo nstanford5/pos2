@@ -1,12 +1,3 @@
-/**
- * This program simulates a business point-of-sale machine (POS)
- * It recieves payment in a network token while rewarding users
- * with a loyalty non-network token. It allows a purchase function of
- * a varying amount of network tokens -- each transaction returns a single
- * non-network loyalty token. It also allows a refund function that returns
- * the cost in network token and receives the non-network token back.
- * 
- */
 'reach 0.1';
 
 export const main = Reach.App(() => {
@@ -19,7 +10,7 @@ export const main = Reach.App(() => {
     launched: Fun([Contract], Null),
   });
   const B = API('Buyer', {
-    purchase: Fun([UInt], Null),
+    purchase: Fun([UInt], UInt),
     refund: Fun([], UInt),
   });
   init();
@@ -39,15 +30,16 @@ export const main = Reach.App(() => {
     .invariant(balance() == total, "network token balance wrong")
     .invariant(balance(tok) == supply - tokensSold, "non-network token balance wrong")
     .while(tokensSold < supply)
-    .api_(B.purchase, (amount) => {
+    .api_(B.purchase, (purchasePrice) => {
       check(tokensSold != supply, "sorry, out of tickets");
-      check(isNone(pMap[this]), "sorry, you are already in this list");
-      check(amount >= min, "sorry, amount too low");
-      return[[amount, [0, tok]], (ret) => {
-        pMap[this] = amount;
+      check(isNone(pMap[this]), "sorry, you are already in the list");
+      check(purchasePrice >= min, "sorry, amount too low");
+      return[[purchasePrice, [0, tok]], (ret) => {
+        pMap[this] = purchasePrice;
+        const sold = tokensSold + 1;
         transfer(1, tok).to(this);
-        ret(null);
-        return [tokensSold + 1, total + amount];
+        ret(sold);
+        return[sold, total + purchasePrice];
       }];
     })
     .api_(B.refund, () => {
@@ -57,7 +49,7 @@ export const main = Reach.App(() => {
         transfer(paid).to(this);
         ret(paid);
         delete pMap[this];
-        return[tokensSold - 1, total - paid]
+        return [tokensSold - 1, total - paid];
       }];
     });
   transfer(total).to(A);
