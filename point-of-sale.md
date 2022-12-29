@@ -222,7 +222,7 @@ To understand the Verification Checks and Invariants of this program better, let
 
 Now that the programming is running to completion, go back to your (`rsh`) file and start commenting out the checks and invariants. Nearly every one of them is necessary for this DApp to compile and run. Study the compilation errors, understand where they are pointing and why. This is the primary reason we like to include the optional error messages in our checks!
 
-Reach out to us in the [Discord](https://discord.gg/kbfNkdaMhD) `#tutorial` channel to brag about your new skills. Just a little though. Maybe then tell us about your dreams and aspirations -- or maybe just where you are from. Your call.
+Reach out to us in the [Discord](https://discord.gg/kbfNkdaMhD) `#tutorial` channel to tell us you got Rickrolled or brag about your new skills. Just a little though. Maybe then tell us about your dreams and aspirations -- or maybe just where you are from. Your call.
 
 
 
