@@ -19,7 +19,7 @@ const loyalTok = await stdlib.launchToken(accA, "Loyalty", "LYL", {supply: USERS
 
 console.log(`Welcome to the point-of-sale machine. This machine processes
 payments of varying amounts and rewards each purchase with a loyalty token.
-The pos will also process refunds, which return network tokens to the customer,
+The POS will also process refunds, which return network tokens to the customer,
 and loyalty tokens to the contract.\n`);
 
 const getPurchasePrice = (i) => {
